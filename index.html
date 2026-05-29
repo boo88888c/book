@@ -312,13 +312,68 @@ td { padding: 11px 14px; font-size: 0.87rem; vertical-align: middle; }
 .note-edit:hover { border-color: #ddd5c0; background: #fdfaf4; }
 .note-edit:focus { outline: none; border-color: #8aab7a; background: #fff; }
 
-/* 刪除按鈕 */
+/* 操作按鈕 */
 .btn-del {
   background: none; border: none; cursor: pointer;
   color: #ccc0a8; font-size: 1rem; padding: 3px 7px;
   border-radius: 8px; transition: all 0.15s;
 }
 .btn-del:hover { color: #c04040; background: #fce8e8; }
+.btn-edit {
+  background: none; border: none; cursor: pointer;
+  color: #a8b898; font-size: 0.95rem; padding: 3px 7px;
+  border-radius: 8px; transition: all 0.15s;
+}
+.btn-edit:hover { color: #5c7a5f; background: #eaf2e8; }
+
+/* ── 編輯彈窗 ── */
+.modal-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(50,40,30,0.45);
+  backdrop-filter: blur(3px);
+  z-index: 1000;
+  align-items: center; justify-content: center;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: #fffcf5;
+  border-radius: 20px;
+  padding: 28px 28px 24px;
+  width: 90%; max-width: 520px;
+  max-height: 90vh; overflow-y: auto;
+  box-shadow: 0 16px 48px rgba(60,50,30,0.2);
+  border: 1.5px solid rgba(200,185,155,0.5);
+  position: relative;
+}
+.modal-title {
+  font-size: 1rem; font-weight: 700; color: #5c7a5f;
+  margin-bottom: 20px; display: flex; align-items: center; gap: 8px;
+}
+.modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+.modal-full { grid-column: 1 / -1; }
+.modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+.btn-save {
+  background: linear-gradient(135deg, #7aaa6a, #5c8a50);
+  color: #fff; border: none; border-radius: 12px;
+  padding: 9px 24px; font-size: 0.9rem; font-family: inherit;
+  font-weight: 700; cursor: pointer;
+  box-shadow: 0 3px 10px rgba(90,130,70,0.3); transition: all 0.15s;
+}
+.btn-save:hover { transform: translateY(-1px); }
+.btn-cancel {
+  background: #ede8dc; color: #7a6a58; border: none;
+  border-radius: 12px; padding: 9px 20px; font-size: 0.9rem;
+  font-family: inherit; font-weight: 600; cursor: pointer; transition: all 0.15s;
+}
+.btn-cancel:hover { background: #e4dcd0; }
+.btn-modal-del {
+  background: #fce8e8; color: #c04040; border: none;
+  border-radius: 12px; padding: 9px 16px; font-size: 0.9rem;
+  font-family: inherit; font-weight: 600; cursor: pointer; transition: all 0.15s;
+  margin-right: auto;
+}
+.btn-modal-del:hover { background: #f8d4d4; }
 
 /* 表格內標籤 */
 .td-tags { display: flex; flex-wrap: wrap; gap: 4px; max-width: 180px; }
@@ -436,6 +491,56 @@ td { padding: 11px 14px; font-size: 0.87rem; vertical-align: middle; }
       <span class="count-badge" id="count-badge">共 0 本</span>
     </div>
     <div id="tag-filter-bar" class="all-tags-bar" style="min-height:20px;"></div>
+  </div>
+
+  <!-- 編輯彈窗 -->
+  <div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
+    <div class="modal">
+      <div class="modal-title">✏️ 編輯書本資料</div>
+      <div class="modal-grid">
+        <div class="field modal-full">
+          <label>📖 書名</label>
+          <input type="text" id="m-title">
+        </div>
+        <div class="field">
+          <label>📅 年份</label>
+          <input type="number" id="m-year" min="1900" max="2099">
+        </div>
+        <div class="field">
+          <label>🎯 借閱難易度</label>
+          <select id="m-diff">
+            <option value="">—</option>
+            <option value="1">1</option><option value="2">2</option>
+            <option value="3">3</option><option value="4">4</option>
+            <option value="5">5</option><option value="X">X</option>
+          </select>
+        </div>
+        <div class="field modal-full">
+          <label>🔗 博客來連結</label>
+          <input type="url" id="m-link">
+        </div>
+        <div class="field">
+          <label>🌿 借閱狀態</label>
+          <select id="m-status">
+            <option value="unread">未借過</option>
+            <option value="read">已借過</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>🏷️ 標籤（逗號分隔）</label>
+          <input type="text" id="m-tags" placeholder="例：心理, 推薦">
+        </div>
+        <div class="field modal-full">
+          <label>💬 備註</label>
+          <textarea id="m-note" rows="3"></textarea>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-modal-del" onclick="deleteFromModal()">🗑️ 刪除</button>
+        <button class="btn-cancel" onclick="closeModal()">取消</button>
+        <button class="btn-save" onclick="saveModal()">儲存</button>
+      </div>
+    </div>
   </div>
 
   <!-- 表格 -->
@@ -625,8 +730,8 @@ function renderTable() {
     const stClass = st==='read' ? 'status-read' : 'status-unread';
     const tagsHtml = (b.tags||[]).map(t => tagChipHtml(t)).join('');
     return `<tr>
-      <td class="td-title"><textarea class="inline-edit title-edit" onchange="updateField(${b.id},'title',this.value)" title="點擊編輯書名" rows="1" oninput="this.rows=1;this.rows=Math.ceil(this.scrollHeight/24)">${esc(b.title)}</textarea></td>
-      <td class="td-year"><input class="inline-edit year-edit" value="${esc(b.year)}" onchange="updateField(${b.id},'year',this.value)" title="點擊編輯年份" placeholder="—"></td>
+      <td class="td-title">${esc(b.title)}</td>
+      <td class="td-year">${esc(b.year)||'—'}</td>
       <td class="td-link">
         ${b.link?`<a href="${esc(b.link)}" target="_blank" rel="noopener">博客來 ↗</a>`:'<span class="no-link-badge">博客來 ✗</span>'}
         <a href="https://taiwanlibrarysearch.herokuapp.com/result?book=${encodeURIComponent(b.title)}" target="_blank" rel="noopener" class="lib-link">圖書館 ↗</a>
@@ -645,7 +750,10 @@ function renderTable() {
       <td><button class="status-btn ${stClass}" onclick="toggleStatus(${b.id})">${stLabel}</button></td>
       <td><div class="td-tags">${tagsHtml}<span style="cursor:pointer;font-size:0.8rem;color:#a09878;" onclick="editTags(${b.id})" title="編輯標籤">＋</span></div></td>
       <td><textarea class="note-edit" rows="2" onchange="updateNote(${b.id},this.value)">${esc(b.note||'')}</textarea></td>
-      <td><button class="btn-del" onclick="deleteBook(${b.id})" title="刪除">✕</button></td>
+      <td style="white-space:nowrap">
+        <button class="btn-edit" onclick="openModal(${b.id})" title="編輯">✏️</button>
+        <button class="btn-del" onclick="deleteBook(${b.id})" title="刪除">✕</button>
+      </td>
     </tr>`;
   }).join('');
 
@@ -653,11 +761,54 @@ function renderTable() {
     const el = document.getElementById('sort-'+k);
     if (el) el.textContent = sortKey===k?(sortDir===1?'▲':'▼'):'';
   });
-  // 自動調整書名高度
-  document.querySelectorAll('.title-edit').forEach(ta => {
-    ta.rows = 1;
-    ta.rows = Math.ceil(ta.scrollHeight / 24);
-  });
+}
+
+// ── 編輯彈窗 ─────────────────────────────────────────────
+let modalBookId = null;
+
+function openModal(id) {
+  const b = books.find(b => b.id === id);
+  if (!b) return;
+  modalBookId = id;
+  document.getElementById('m-title').value = b.title || '';
+  document.getElementById('m-year').value = b.year || '';
+  document.getElementById('m-link').value = b.link || '';
+  document.getElementById('m-diff').value = b.diff || '';
+  document.getElementById('m-status').value = b.status || 'unread';
+  document.getElementById('m-tags').value = (b.tags||[]).join(', ');
+  document.getElementById('m-note').value = b.note || '';
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function closeModal(e) {
+  if (e && e.target !== document.getElementById('modal-overlay')) return;
+  document.getElementById('modal-overlay').classList.remove('open');
+  modalBookId = null;
+}
+
+async function saveModal() {
+  const b = books.find(b => b.id === modalBookId);
+  if (!b) return;
+  b.title  = document.getElementById('m-title').value.trim();
+  b.year   = document.getElementById('m-year').value;
+  b.link   = document.getElementById('m-link').value.trim();
+  b.diff   = document.getElementById('m-diff').value;
+  b.status = document.getElementById('m-status').value;
+  b.tags   = document.getElementById('m-tags').value.split(',').map(t=>t.trim()).filter(Boolean);
+  b.note   = document.getElementById('m-note').value.trim();
+  await saveToSB(modalBookId);
+  document.getElementById('modal-overlay').classList.remove('open');
+  modalBookId = null;
+  renderTable(); renderTagFilter(); updateTagDatalist();
+}
+
+async function deleteFromModal() {
+  if (!confirm('確定要刪除這本書嗎？')) return;
+  await fetch(`${API}?id=eq.${modalBookId}`, { method: 'DELETE', headers: HEADERS });
+  books = books.filter(b => b.id !== modalBookId);
+  document.getElementById('modal-overlay').classList.remove('open');
+  modalBookId = null;
+  renderTable(); renderTagFilter(); updateTagDatalist();
 }
 
 function editTags(id) {
