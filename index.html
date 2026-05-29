@@ -3,364 +3,436 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>📚 書本收藏</title>
+<title>📚 我的書本收藏</title>
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
 
-  body {
-    font-family: 'Segoe UI', '微軟正黑體', sans-serif;
-    background: #f5f0eb;
-    color: #2c2c2c;
-    min-height: 100vh;
-  }
+body {
+  font-family: 'Segoe UI', '微軟正黑體', sans-serif;
+  background-color: #f5f0e8;
+  background-image:
+    radial-gradient(circle at 15% 20%, rgba(140,180,130,0.12) 0%, transparent 45%),
+    radial-gradient(circle at 85% 75%, rgba(180,150,100,0.1) 0%, transparent 45%),
+    radial-gradient(circle at 50% 50%, rgba(200,220,180,0.08) 0%, transparent 60%);
+  color: #3a3028;
+  min-height: 100vh;
+}
 
-  header {
-    background: #4a3728;
-    color: #f5f0eb;
-    padding: 20px 32px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-  header h1 { font-size: 1.5rem; font-weight: 600; }
-  header span { font-size: 1.8rem; }
+/* ── Header ── */
+header {
+  background: linear-gradient(135deg, #5c7a5f 0%, #4a6650 100%);
+  padding: 0;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(60,80,50,0.25);
+}
+.header-inner {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 20px 32px;
+  position: relative;
+  z-index: 2;
+}
+header h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #f0ebe0;
+  letter-spacing: 0.02em;
+}
+.header-icon { font-size: 2rem; }
 
-  .main { max-width: 1100px; margin: 0 auto; padding: 28px 20px; }
+/* 插畫裝飾 SVG */
+.header-deco {
+  position: absolute;
+  right: 0; top: 0; bottom: 0;
+  width: 260px;
+  opacity: 0.18;
+  pointer-events: none;
+}
 
-  /* 新增表單 */
-  .add-form {
-    background: #fff;
-    border-radius: 12px;
-    padding: 24px;
-    margin-bottom: 28px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-  }
-  .add-form h2 { font-size: 1rem; color: #4a3728; margin-bottom: 18px; font-weight: 600; }
+.main { max-width: 1150px; margin: 0 auto; padding: 28px 20px; }
 
-  .form-row {
-    display: grid;
-    grid-template-columns: 1fr 90px 1fr 110px;
-    gap: 12px;
-    align-items: start;
-    margin-bottom: 12px;
-  }
-  .form-row-2 {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    align-items: start;
-  }
+/* ── 卡片 ── */
+.card {
+  background: rgba(255,252,245,0.92);
+  border-radius: 18px;
+  padding: 24px;
+  margin-bottom: 20px;
+  box-shadow: 0 3px 16px rgba(100,80,50,0.1);
+  border: 1.5px solid rgba(200,185,155,0.4);
+  position: relative;
+}
+/* 卡片左側裝飾線 */
+.card::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 16px; bottom: 16px;
+  width: 4px;
+  background: linear-gradient(180deg, #8aab7a, #c8a87a);
+  border-radius: 0 4px 4px 0;
+}
 
-  .field { display: flex; flex-direction: column; gap: 4px; position: relative; }
-  label { font-size: 0.75rem; color: #888; font-weight: 500; }
+.card-title {
+  font-size: 0.93rem;
+  font-weight: 700;
+  color: #5c7a5f;
+  margin-bottom: 18px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
 
-  input[type="text"], input[type="number"], input[type="url"], select, textarea {
-    border: 1.5px solid #ddd;
-    border-radius: 7px;
-    padding: 8px 11px;
-    font-size: 0.9rem;
-    font-family: inherit;
-    transition: border-color 0.15s;
-    background: #fafafa;
-    color: #2c2c2c;
-    width: 100%;
-  }
-  input:focus, select:focus, textarea:focus {
-    outline: none;
-    border-color: #4a3728;
-    background: #fff;
-  }
-  textarea { resize: vertical; min-height: 60px; }
+/* ── 表單欄位 ── */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 88px 1fr 100px;
+  gap: 12px; margin-bottom: 12px; align-items: start;
+}
+.form-grid-2 {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 12px; margin-bottom: 12px; align-items: start;
+}
+.field { display: flex; flex-direction: column; gap: 5px; position: relative; }
+label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #6b7a5a;
+  letter-spacing: 0.04em;
+  text-transform: none;
+}
 
-  /* 自動完成下拉 */
-  .suggestions {
-    position: absolute;
-    top: 100%;
-    left: 0; right: 0;
-    background: #fff;
-    border: 1.5px solid #4a3728;
-    border-top: none;
-    border-radius: 0 0 8px 8px;
-    z-index: 100;
-    max-height: 280px;
-    overflow-y: auto;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
-  }
-  .suggestion-item {
-    padding: 10px 12px;
-    cursor: pointer;
-    border-bottom: 1px solid #f0f0f0;
-    transition: background 0.1s;
-  }
-  .suggestion-item:hover { background: #f5f0eb; }
-  .suggestion-item:last-child { border-bottom: none; }
-  .sug-title { font-size: 0.88rem; font-weight: 500; color: #2c2c2c; }
-  .sug-meta { font-size: 0.75rem; color: #888; margin-top: 2px; }
-  .sug-searching { padding: 12px; color: #888; font-size: 0.85rem; text-align: center; }
+input[type="text"], input[type="number"], input[type="url"], select, textarea {
+  border: 2px solid #ddd5c0;
+  border-radius: 11px;
+  padding: 9px 13px;
+  font-size: 0.88rem;
+  font-family: inherit;
+  transition: all 0.2s;
+  background: #fdfaf4;
+  color: #3a3028;
+  width: 100%;
+}
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: #8aab7a;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(138,171,122,0.15);
+}
+textarea { resize: vertical; min-height: 64px; }
 
-  .btn-add {
-    background: #4a3728;
-    color: #fff;
-    border: none;
-    border-radius: 7px;
-    padding: 9px 22px;
-    font-size: 0.9rem;
-    cursor: pointer;
-    font-family: inherit;
-    font-weight: 500;
-    transition: background 0.15s;
-    margin-top: 12px;
-  }
-  .btn-add:hover { background: #6b5040; }
+/* ── 自動完成 ── */
+.suggestions {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0; right: 0;
+  background: #fff;
+  border: 2px solid #c8bc9a;
+  border-radius: 13px;
+  z-index: 200;
+  max-height: 280px;
+  overflow-y: auto;
+  box-shadow: 0 8px 24px rgba(100,80,50,0.15);
+}
+.suggestion-item {
+  padding: 10px 14px;
+  cursor: pointer;
+  border-bottom: 1px solid #f5f0e4;
+  transition: background 0.1s;
+}
+.suggestion-item:hover { background: #f8f4ec; }
+.suggestion-item:last-child { border-bottom: none; }
+.sug-title { font-size: 0.87rem; font-weight: 600; color: #3a3028; }
+.sug-meta { font-size: 0.73rem; color: #9a8a70; margin-top: 2px; }
+.sug-searching { padding: 14px; color: #b0a080; font-size: 0.84rem; text-align: center; }
 
-  /* 篩選列 */
-  .filter-bar {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    margin-bottom: 16px;
-    flex-wrap: wrap;
-  }
-  .filter-bar input[type="text"] {
-    flex: 1;
-    min-width: 180px;
-    max-width: 300px;
-  }
-  .filter-bar select { width: auto; }
-  .count-badge {
-    margin-left: auto;
-    font-size: 0.8rem;
-    color: #888;
-    white-space: nowrap;
-  }
+/* ── 標籤輸入 ── */
+.tag-input-wrap {
+  border: 2px solid #ddd5c0;
+  border-radius: 11px;
+  padding: 6px 10px;
+  background: #fdfaf4;
+  display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
+  min-height: 44px; cursor: text; transition: all 0.2s;
+}
+.tag-input-wrap:focus-within {
+  border-color: #8aab7a; background: #fff;
+  box-shadow: 0 0 0 3px rgba(138,171,122,0.15);
+}
+.tag-input-wrap input {
+  border: none; background: transparent; outline: none;
+  font-size: 0.85rem; color: #3a3028; padding: 2px 4px;
+  min-width: 80px; flex: 1; box-shadow: none !important;
+}
+.tag-chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 10px; border-radius: 20px;
+  font-size: 0.77rem; font-weight: 600; white-space: nowrap;
+}
+.tag-chip button {
+  background: none; border: none; cursor: pointer;
+  font-size: 0.72rem; opacity: 0.55; padding: 0;
+  line-height: 1; color: inherit;
+}
+.tag-chip button:hover { opacity: 1; }
 
-  /* 表格 */
-  .table-wrap {
-    background: #fff;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    overflow: hidden;
-  }
-  table { width: 100%; border-collapse: collapse; }
-  thead tr { background: #4a3728; color: #f5f0eb; }
-  thead th {
-    padding: 11px 14px;
-    text-align: left;
-    font-size: 0.8rem;
-    font-weight: 500;
-    cursor: pointer;
-    user-select: none;
-    white-space: nowrap;
-  }
-  thead th:hover { background: #6b5040; }
-  thead th .sort-arrow { margin-left: 4px; opacity: 0.6; }
+/* 標籤顏色 — 大地色系 */
+.tc-0 { background: #d8ecd0; color: #3a6a30; }
+.tc-1 { background: #e8dcc8; color: #7a5a30; }
+.tc-2 { background: #d0e4f0; color: #2a5878; }
+.tc-3 { background: #f0e0c8; color: #8a5020; }
+.tc-4 { background: #e4d8f0; color: #5a3880; }
+.tc-5 { background: #f0dcd8; color: #882830; }
+.tc-6 { background: #d8f0e8; color: #206850; }
+.tc-7 { background: #f4ecd0; color: #786030; }
 
-  tbody tr { border-bottom: 1px solid #f0ebe5; transition: background 0.1s; }
-  tbody tr:hover { background: #fdf8f4; }
-  tbody tr:last-child { border-bottom: none; }
-  td { padding: 10px 14px; font-size: 0.88rem; vertical-align: middle; }
+/* ── 新增按鈕 ── */
+.btn-add {
+  background: linear-gradient(135deg, #7aaa6a 0%, #5c8a50 100%);
+  color: #fff;
+  border: none; border-radius: 13px;
+  padding: 10px 26px;
+  font-size: 0.9rem; font-family: inherit; font-weight: 700;
+  cursor: pointer; transition: all 0.2s;
+  box-shadow: 0 4px 14px rgba(90,130,70,0.3);
+  margin-top: 4px; display: flex; align-items: center; gap: 7px;
+}
+.btn-add:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(90,130,70,0.4); }
+.btn-add:active { transform: translateY(0); }
+.btn-add:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 
-  .td-title { font-weight: 500; min-width: 160px; }
-  .td-year { color: #666; white-space: nowrap; }
-  .td-link a {
-    color: #4a3728;
-    text-decoration: none;
-    font-size: 0.82rem;
-    border: 1px solid #c8a882;
-    border-radius: 5px;
-    padding: 2px 8px;
-    white-space: nowrap;
-  }
-  .td-link a:hover { background: #f5f0eb; }
-  .lib-link {
-    color: #2e6b8a !important;
-    border-color: #8ab8cc !important;
-    margin-top: 4px;
-    display: inline-block;
-  }
+/* ── 標籤管理區 ── */
+.all-tags-bar { display: flex; flex-wrap: wrap; gap: 7px; align-items: center; margin-top: 6px; }
+.all-tags-bar .tag-chip { cursor: pointer; transition: transform 0.12s, box-shadow 0.12s; }
+.all-tags-bar .tag-chip:hover { transform: scale(1.06); box-shadow: 0 2px 8px rgba(0,0,0,0.12); }
+.tag-active { outline: 2px solid #5c8a50; outline-offset: 2px; }
 
-  /* 難易度標籤 */
-  .diff-badge {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 28px; height: 28px;
-    border-radius: 6px;
-    font-weight: 700;
-    font-size: 0.9rem;
-  }
-  .diff-1 { background: #e8f5e9; color: #2e7d32; }
-  .diff-2 { background: #fff8e1; color: #f57f17; }
-  .diff-3 { background: #fff3e0; color: #e65100; }
-  .diff-4 { background: #fce4ec; color: #c62828; }
-  .diff-5 { background: #f3e5f5; color: #6a1b9a; }
-  .diff-X { background: #eceff1; color: #455a64; }
+/* ── 篩選列 ── */
+.filter-bar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 14px; }
+.filter-bar input[type="text"] { flex: 1; min-width: 180px; max-width: 280px; }
+.filter-bar select { width: auto; }
+.count-badge {
+  margin-left: auto; font-size: 0.78rem;
+  color: #6b7a5a; background: #eee8d8;
+  padding: 4px 13px; border-radius: 20px; font-weight: 600; white-space: nowrap;
+}
 
-  /* 表格內難易度下拉 */
-  .diff-select {
-    width: 52px; padding: 3px 2px 3px 6px;
-    border-radius: 6px; border: 1.5px solid transparent;
-    font-weight: 700; font-size: 0.88rem; cursor: pointer;
-    appearance: none; -webkit-appearance: none;
-    background-image: none; text-align: center;
-  }
-  .diff-select:focus { outline: none; border-color: #4a3728; }
-  .diff-sel-1  { background: #e8f5e9; color: #2e7d32; }
-  .diff-sel-2  { background: #fff8e1; color: #f57f17; }
-  .diff-sel-3  { background: #fff3e0; color: #e65100; }
-  .diff-sel-4  { background: #fce4ec; color: #c62828; }
-  .diff-sel-5  { background: #f3e5f5; color: #6a1b9a; }
-  .diff-sel-X  { background: #eceff1; color: #455a64; }
-  .diff-sel-none { background: #f5f5f5; color: #bbb; }
+/* ── 表格 ── */
+.table-wrap {
+  background: rgba(255,252,245,0.92);
+  border-radius: 18px;
+  box-shadow: 0 3px 16px rgba(100,80,50,0.1);
+  border: 1.5px solid rgba(200,185,155,0.4);
+  overflow: hidden;
+}
+table { width: 100%; border-collapse: collapse; }
+thead tr { background: linear-gradient(135deg, #5c7a5f 0%, #4a6650 100%); color: #f0ebe0; }
+thead th {
+  padding: 12px 14px; text-align: left;
+  font-size: 0.78rem; font-weight: 700;
+  cursor: pointer; user-select: none; white-space: nowrap;
+  letter-spacing: 0.03em;
+}
+thead th:hover { background: rgba(255,255,255,0.12); }
+thead th .sort-arrow { margin-left: 4px; opacity: 0.7; }
 
-  /* 借閱狀態 */
-  .status-btn {
-    border: none;
-    border-radius: 20px;
-    padding: 3px 12px;
-    font-size: 0.78rem;
-    font-weight: 600;
-    cursor: pointer;
-    font-family: inherit;
-    transition: all 0.15s;
-    white-space: nowrap;
-  }
-  .status-unread {
-    background: #f0f0f0;
-    color: #999;
-  }
-  .status-unread:hover { background: #e0e0e0; }
-  .status-read {
-    background: #e8f5e9;
-    color: #2e7d32;
-  }
-  .status-read:hover { background: #c8e6c9; }
+tbody tr { border-bottom: 1px solid #ede6d6; transition: background 0.1s; }
+tbody tr:hover { background: #faf6ee; }
+tbody tr:last-child { border-bottom: none; }
+td { padding: 11px 14px; font-size: 0.87rem; vertical-align: middle; }
 
-  .td-note { color: #555; max-width: 220px; font-size: 0.82rem; line-height: 1.5; }
-  .note-edit {
-    width: 100%; min-width: 160px; border: 1.5px solid transparent;
-    border-radius: 6px; padding: 4px 6px; font-size: 0.82rem;
-    font-family: inherit; color: #555; background: transparent;
-    resize: vertical; line-height: 1.5;
-  }
-  .note-edit:hover { border-color: #ddd; background: #fafafa; }
-  .note-edit:focus { outline: none; border-color: #4a3728; background: #fff; }
+.td-title { font-weight: 600; min-width: 140px; color: #3a3028; }
+.td-year { color: #9a8a70; white-space: nowrap; font-size: 0.83rem; }
 
-  /* 操作按鈕 */
-  .btn-del {
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: #ccc;
-    font-size: 1rem;
-    padding: 2px 6px;
-    border-radius: 4px;
-    transition: color 0.15s;
-  }
-  .btn-del:hover { color: #e53935; }
+/* 連結按鈕 */
+.td-link { display: flex; flex-direction: column; gap: 5px; }
+.td-link a {
+  color: #5c7a5f; text-decoration: none;
+  font-size: 0.78rem; border: 1.5px solid #b8cca8;
+  border-radius: 9px; padding: 3px 10px;
+  white-space: nowrap; transition: all 0.15s; text-align: center;
+}
+.td-link a:hover { background: #edf5e8; border-color: #8aab7a; }
+.lib-link { color: #5878a0 !important; border-color: #a8bcd8 !important; }
+.lib-link:hover { background: #eef3fa !important; }
 
-  .empty-state {
-    text-align: center;
-    padding: 48px 20px;
-    color: #aaa;
-    font-size: 0.9rem;
-  }
-  .empty-state .icon { font-size: 2.5rem; margin-bottom: 10px; }
+/* 難易度 */
+.diff-select {
+  width: 52px; padding: 4px 2px 4px 8px;
+  border-radius: 9px; border: 2px solid transparent;
+  font-weight: 700; font-size: 0.88rem; cursor: pointer;
+  appearance: none; -webkit-appearance: none;
+  background-image: none; text-align: center;
+}
+.diff-select:focus { outline: none; border-color: #8aab7a; }
+.diff-sel-1  { background: #d8ecd0; color: #3a6a30; }
+.diff-sel-2  { background: #f0ead0; color: #7a6020; }
+.diff-sel-3  { background: #f0e0c8; color: #8a5020; }
+.diff-sel-4  { background: #f0d8d0; color: #882830; }
+.diff-sel-5  { background: #e8d0d8; color: #7a2848; }
+.diff-sel-X  { background: #e8e4dc; color: #888070; }
+.diff-sel-none { background: #f4f0e8; color: #b0a888; }
 
-  @media (max-width: 700px) {
-    .form-row { grid-template-columns: 1fr 80px; }
-    .form-row-2 { grid-template-columns: 1fr; }
-  }
+/* 狀態按鈕 */
+.status-btn {
+  border: none; border-radius: 20px;
+  padding: 4px 14px; font-size: 0.77rem; font-weight: 700;
+  cursor: pointer; font-family: inherit;
+  transition: all 0.15s; white-space: nowrap;
+}
+.status-unread { background: #ede8dc; color: #9a8a70; }
+.status-unread:hover { background: #e4dcd0; }
+.status-read { background: #d8ecd0; color: #3a6a30; }
+.status-read:hover { background: #cce4c4; }
+
+/* 備註 */
+.note-edit {
+  width: 100%; min-width: 140px; border: 2px solid transparent;
+  border-radius: 9px; padding: 5px 8px; font-size: 0.81rem;
+  font-family: inherit; color: #6a5a48; background: transparent;
+  resize: vertical; line-height: 1.5;
+}
+.note-edit:hover { border-color: #ddd5c0; background: #fdfaf4; }
+.note-edit:focus { outline: none; border-color: #8aab7a; background: #fff; }
+
+/* 刪除按鈕 */
+.btn-del {
+  background: none; border: none; cursor: pointer;
+  color: #ccc0a8; font-size: 1rem; padding: 3px 7px;
+  border-radius: 8px; transition: all 0.15s;
+}
+.btn-del:hover { color: #c04040; background: #fce8e8; }
+
+/* 表格內標籤 */
+.td-tags { display: flex; flex-wrap: wrap; gap: 4px; max-width: 180px; }
+
+/* empty state */
+.empty-state { text-align: center; padding: 52px 20px; color: #b0a080; font-size: 0.9rem; }
+.empty-state .icon { font-size: 3rem; margin-bottom: 12px; animation: float 3s ease-in-out infinite; }
+@keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+
+@media (max-width: 700px) {
+  .form-grid { grid-template-columns: 1fr 80px; }
+  .form-grid-2 { grid-template-columns: 1fr; }
+}
 </style>
 </head>
 <body>
 
 <header>
-  <span>📚</span>
-  <h1>書本收藏</h1>
+  <!-- 插畫裝飾 -->
+  <svg class="header-deco" viewBox="0 0 260 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <ellipse cx="200" cy="20" rx="40" ry="18" fill="white"/>
+    <ellipse cx="230" cy="50" rx="28" ry="14" fill="white"/>
+    <ellipse cx="170" cy="55" rx="22" ry="10" fill="white"/>
+    <circle cx="145" cy="30" r="8" fill="white"/>
+    <circle cx="255" cy="30" r="6" fill="white"/>
+    <!-- 小葉子 -->
+    <path d="M60 10 Q70 0 80 10 Q70 20 60 10Z" fill="white"/>
+    <path d="M40 40 Q50 28 62 38 Q52 48 40 40Z" fill="white"/>
+    <path d="M90 50 Q98 40 108 50 Q100 58 90 50Z" fill="white"/>
+    <path d="M20 15 Q28 5 36 15 Q28 24 20 15Z" fill="white"/>
+    <!-- 星星 -->
+    <path d="M120 15 L122 20 L128 20 L123 24 L125 30 L120 26 L115 30 L117 24 L112 20 L118 20Z" fill="white"/>
+    <path d="M245 65 L246 68 L250 68 L247 70 L248 74 L245 72 L242 74 L243 70 L240 68 L244 68Z" fill="white"/>
+  </svg>
+
+  <div class="header-inner">
+    <span class="header-icon">📚</span>
+    <h1>我的書本收藏</h1>
+  </div>
 </header>
 
 <div class="main">
 
   <!-- 新增表單 -->
-  <div class="add-form">
-    <h2>新增一本書</h2>
-    <div class="form-row">
+  <div class="card">
+    <div class="card-title">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1L9.5 5.5H14.5L10.5 8.5L12 13L8 10L4 13L5.5 8.5L1.5 5.5H6.5L8 1Z" fill="#8aab7a"/></svg>
+      新增一本書
+    </div>
+    <div class="form-grid">
       <div class="field" id="title-field">
-        <label>書名（輸入關鍵字自動搜尋）</label>
+        <label>📖 書名（輸入關鍵字自動搜尋）</label>
         <input type="text" id="inp-title" placeholder="例：原子習慣" autocomplete="off">
         <div class="suggestions" id="suggestions" style="display:none"></div>
       </div>
       <div class="field">
-        <label>出版年份</label>
+        <label>📅 年份</label>
         <input type="number" id="inp-year" placeholder="2024" min="1900" max="2099">
       </div>
       <div class="field">
-        <label>博客來連結</label>
+        <label>🔗 博客來連結</label>
         <input type="url" id="inp-link" placeholder="自動產生，可手動修改">
       </div>
       <div class="field">
-        <label>借閱難易度</label>
+        <label>🎯 借閱難易度</label>
         <select id="inp-diff">
           <option value="">—</option>
-          <option value="1">1</option>
-          <option value="2">2</option>
-          <option value="3">3</option>
-          <option value="4">4</option>
-          <option value="5">5</option>
-          <option value="X">X</option>
+          <option value="1">1</option><option value="2">2</option>
+          <option value="3">3</option><option value="4">4</option>
+          <option value="5">5</option><option value="X">X</option>
         </select>
       </div>
     </div>
-    <div class="form-row" style="grid-template-columns: auto 1fr; margin-bottom:0;">
+    <div class="form-grid-2">
       <div class="field">
-        <label>借閱狀態</label>
+        <label>🌿 借閱狀態</label>
         <select id="inp-status">
           <option value="unread">未借過</option>
           <option value="read">已借過</option>
         </select>
       </div>
-    </div>
-    <div class="form-row-2">
       <div class="field">
-        <label>備註</label>
-        <textarea id="inp-note" placeholder="任何想記錄的事..."></textarea>
+        <label>🏷️ 標籤（輸入後按 Enter 新增）</label>
+        <div class="tag-input-wrap" id="tag-input-wrap" onclick="document.getElementById('tag-text').focus()">
+          <input type="text" id="tag-text" placeholder="輸入標籤…" autocomplete="off" list="tag-datalist">
+          <datalist id="tag-datalist"></datalist>
+        </div>
       </div>
     </div>
-    <button class="btn-add" onclick="addBook()">＋ 新增</button>
+    <div class="field" style="margin-bottom:16px;">
+      <label>💬 備註</label>
+      <textarea id="inp-note" placeholder="任何想記錄的事…"></textarea>
+    </div>
+    <button class="btn-add" onclick="addBook()">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="white" stroke-width="1.5"/><path d="M8 5V11M5 8H11" stroke="white" stroke-width="1.8" stroke-linecap="round"/></svg>
+      新增收藏
+    </button>
   </div>
 
   <!-- 篩選 -->
-  <div class="filter-bar">
-    <input type="text" id="filter-text" placeholder="🔍 搜尋書名或備註…" oninput="renderTable()">
-    <select id="filter-diff" onchange="renderTable()">
-      <option value="">所有難易度</option>
-      <option value="1">1</option>
-      <option value="2">2</option>
-      <option value="3">3</option>
-      <option value="4">4</option>
-      <option value="5">5</option>
-      <option value="X">X（借不到）</option>
-      <option value="">— 未設定 —</option>
-    </select>
-    <select id="filter-status" onchange="renderTable()">
-      <option value="">借過 ＋ 未借</option>
-      <option value="unread">未借過</option>
-      <option value="read">已借過</option>
-    </select>
-    <span class="count-badge" id="count-badge"></span>
+  <div class="card" style="padding:18px 24px;">
+    <div class="filter-bar">
+      <input type="text" id="filter-text" placeholder="🔍 搜尋書名或備註…" oninput="renderTable()">
+      <select id="filter-diff" onchange="renderTable()">
+        <option value="">所有難易度</option>
+        <option value="1">1</option><option value="2">2</option>
+        <option value="3">3</option><option value="4">4</option>
+        <option value="5">5</option><option value="X">X</option>
+      </select>
+      <select id="filter-status" onchange="renderTable()">
+        <option value="">全部狀態</option>
+        <option value="unread">未借過</option>
+        <option value="read">已借過</option>
+      </select>
+      <span class="count-badge" id="count-badge">共 0 本</span>
+    </div>
+    <div id="tag-filter-bar" class="all-tags-bar" style="min-height:20px;"></div>
   </div>
 
-  <!-- 書單表格 -->
+  <!-- 表格 -->
   <div class="table-wrap">
     <table>
       <thead>
         <tr>
-          <th onclick="sortBy('title')">書名 <span class="sort-arrow" id="sort-title"></span></th>
+          <th onclick="sortBy('title')">📖 書名 <span class="sort-arrow" id="sort-title"></span></th>
           <th onclick="sortBy('year')">年份 <span class="sort-arrow" id="sort-year"></span></th>
           <th>連結</th>
           <th onclick="sortBy('diff')">難易度 <span class="sort-arrow" id="sort-diff"></span></th>
           <th onclick="sortBy('status')">狀態 <span class="sort-arrow" id="sort-status"></span></th>
+          <th>🏷️ 標籤</th>
           <th>備註</th>
           <th></th>
         </tr>
@@ -372,32 +444,66 @@
 </div>
 
 <script>
-// ── Supabase 設定 ────────────────────────────────────────
+// ── Supabase ─────────────────────────────────────────────
 const SB_URL = 'https://iijsideoqesqizwxpqjo.supabase.co';
 const SB_KEY = 'sb_publishable_wT0oFFiIPQ6zy-MMQeJ0Rw_-de1yO06';
 const API = `${SB_URL}/rest/v1/books`;
 const HEADERS = {
-  'apikey': SB_KEY,
-  'Authorization': `Bearer ${SB_KEY}`,
-  'Content-Type': 'application/json',
-  'Prefer': 'return=representation'
+  'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}`,
+  'Content-Type': 'application/json', 'Prefer': 'return=representation'
 };
 
 let books = [];
 let sortKey = 'title', sortDir = 1;
+let filterTag = '';
+let newBookTags = [];
 
-// ── Supabase CRUD ────────────────────────────────────────
+// ── 標籤顏色 ─────────────────────────────────────────────
+function tagColor(name) {
+  let h = 0;
+  for (let c of name) h = (h * 31 + c.charCodeAt(0)) % 8;
+  return h;
+}
+function tagChipHtml(name, removable = false, idx = null) {
+  const c = tagColor(name);
+  const rm = removable ? `<button onclick="removeNewTag(${idx})" title="移除">✕</button>` : '';
+  return `<span class="tag-chip tc-${c}">${esc(name)}${rm}</span>`;
+}
+
+// ── 標籤輸入 ─────────────────────────────────────────────
+document.getElementById('tag-text').addEventListener('keydown', e => {
+  if (e.key === 'Enter' || e.key === ',') {
+    e.preventDefault();
+    const val = e.target.value.trim().replace(/,/g,'');
+    if (val && !newBookTags.includes(val)) { newBookTags.push(val); renderNewBookTags(); updateTagDatalist(); }
+    e.target.value = '';
+  }
+});
+function renderNewBookTags() {
+  const wrap = document.getElementById('tag-input-wrap');
+  wrap.querySelectorAll('.tag-chip').forEach(el => el.remove());
+  newBookTags.forEach((t, i) => {
+    const span = document.createElement('span');
+    span.innerHTML = tagChipHtml(t, true, i);
+    wrap.insertBefore(span.firstChild, document.getElementById('tag-text'));
+  });
+}
+function removeNewTag(i) { newBookTags.splice(i, 1); renderNewBookTags(); }
+function updateTagDatalist() {
+  const allTags = [...new Set(books.flatMap(b => b.tags || []))];
+  document.getElementById('tag-datalist').innerHTML = allTags.map(t => `<option value="${esc(t)}">`).join('');
+}
+
+// ── Supabase CRUD ─────────────────────────────────────────
 async function loadBooks() {
   setLoading(true);
   try {
     const res = await fetch(API + '?order=created_at.desc', { headers: HEADERS });
     const rows = await res.json();
     books = rows.map(row => ({ id: row.id, ...JSON.parse(row.data || '{}') }));
-  } catch(e) {
-    console.error(e);
-  }
+  } catch(e) { console.error(e); }
   setLoading(false);
-  renderTable();
+  renderTable(); renderTagFilter(); updateTagDatalist();
 }
 
 async function saveToSB(id) {
@@ -410,63 +516,64 @@ async function saveToSB(id) {
   });
 }
 
-// ── 新增書本 ────────────────────────────────────────────
 async function addBook() {
   const title = document.getElementById('inp-title').value.trim();
-  if (!title) { alert('請輸入書名'); return; }
-
+  if (!title) { alert('請輸入書名 📖'); return; }
   const bookData = {
-    title,
-    year: document.getElementById('inp-year').value || '',
+    title, year: document.getElementById('inp-year').value || '',
     link: document.getElementById('inp-link').value.trim() || booksLink(title),
     diff: document.getElementById('inp-diff').value,
     status: document.getElementById('inp-status').value || 'unread',
     note: document.getElementById('inp-note').value.trim(),
+    tags: [...newBookTags],
   };
-
   const btn = document.querySelector('.btn-add');
-  btn.disabled = true; btn.textContent = '儲存中…';
-
+  btn.disabled = true; btn.childNodes[btn.childNodes.length-1].textContent = ' 儲存中…';
   try {
-    const res = await fetch(API, {
-      method: 'POST', headers: HEADERS,
-      body: JSON.stringify({ data: JSON.stringify(bookData) })
-    });
+    const res = await fetch(API, { method: 'POST', headers: HEADERS, body: JSON.stringify({ data: JSON.stringify(bookData) }) });
     const [row] = await res.json();
     books.unshift({ id: row.id, ...bookData });
-    renderTable();
-    clearForm();
+    renderTable(); renderTagFilter(); updateTagDatalist(); clearForm();
   } catch(e) { alert('新增失敗，請稍後再試'); }
-
-  btn.disabled = false; btn.textContent = '＋ 新增';
+  btn.disabled = false; btn.childNodes[btn.childNodes.length-1].textContent = ' 新增收藏';
 }
 
 function clearForm() {
   ['inp-title','inp-year','inp-link','inp-note'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('inp-diff').value = '';
   document.getElementById('inp-status').value = 'unread';
-  hideSuggestions();
+  newBookTags = []; renderNewBookTags(); hideSuggestions();
 }
 
 async function deleteBook(id) {
   if (!confirm('確定要刪除這本書嗎？')) return;
   await fetch(`${API}?id=eq.${id}`, { method: 'DELETE', headers: HEADERS });
   books = books.filter(b => b.id !== id);
-  renderTable();
+  renderTable(); renderTagFilter(); updateTagDatalist();
 }
 
-// ── 博客來連結 ───────────────────────────────────────────
 function booksLink(title) {
   return 'https://search.books.com.tw/search/query/key/' + encodeURIComponent(title) + '/cat/BKS/';
 }
-
-// ── 載入中狀態 ───────────────────────────────────────────
 function setLoading(on) {
-  const tbody = document.getElementById('book-tbody');
-  if (on) tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><div class="icon">⏳</div>載入中…</div></td></tr>`;
+  if (on) document.getElementById('book-tbody').innerHTML =
+    `<tr><td colspan="8"><div class="empty-state"><div class="icon">🍵</div>載入中…</div></td></tr>`;
 }
 
-// ── 渲染表格 ────────────────────────────────────────────
+// ── 標籤篩選 ─────────────────────────────────────────────
+function renderTagFilter() {
+  const allTags = [...new Set(books.flatMap(b => b.tags || []))].sort();
+  const bar = document.getElementById('tag-filter-bar');
+  if (!allTags.length) { bar.innerHTML = '<span style="color:#b0a888;font-size:0.76rem;">（尚無標籤）</span>'; return; }
+  bar.innerHTML = allTags.map(t => {
+    const c = tagColor(t);
+    const active = filterTag === t ? 'tag-active' : '';
+    return `<span class="tag-chip tc-${c} ${active}" onclick="setTagFilter('${esc(t)}')" style="cursor:pointer">${esc(t)}</span>`;
+  }).join('');
+}
+function setTagFilter(tag) { filterTag = filterTag === tag ? '' : tag; renderTagFilter(); renderTable(); }
+
+// ── 渲染表格 ─────────────────────────────────────────────
 function renderTable() {
   const q = document.getElementById('filter-text').value.toLowerCase();
   const fd = document.getElementById('filter-diff').value;
@@ -475,40 +582,41 @@ function renderTable() {
   let list = books.filter(b => {
     const matchText = !q || b.title.toLowerCase().includes(q) || (b.note||'').toLowerCase().includes(q);
     const matchDiff = !fd || b.diff === fd;
-    const matchStatus = !fs || (b.status || 'unread') === fs;
-    return matchText && matchDiff && matchStatus;
+    const matchStatus = !fs || (b.status||'unread') === fs;
+    const matchTag = !filterTag || (b.tags||[]).includes(filterTag);
+    return matchText && matchDiff && matchStatus && matchTag;
   });
 
   list.sort((a, b) => {
-    let va = a[sortKey] || '', vb = b[sortKey] || '';
-    if (sortKey === 'year') { va = Number(va)||0; vb = Number(vb)||0; }
-    if (sortKey === 'diff') { va = diffOrder(va); vb = diffOrder(vb); }
-    if (sortKey === 'status') { va = va === 'read' ? 0 : 1; vb = vb === 'read' ? 0 : 1; }
-    return va < vb ? -sortDir : va > vb ? sortDir : 0;
+    let va = a[sortKey]||'', vb = b[sortKey]||'';
+    if (sortKey==='year') { va=Number(va)||0; vb=Number(vb)||0; }
+    if (sortKey==='diff') { va=diffOrder(va); vb=diffOrder(vb); }
+    if (sortKey==='status') { va=va==='read'?0:1; vb=vb==='read'?0:1; }
+    return va<vb?-sortDir:va>vb?sortDir:0;
   });
 
   document.getElementById('count-badge').textContent = `共 ${list.length} 本`;
 
   const tbody = document.getElementById('book-tbody');
   if (!list.length) {
-    tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><div class="icon">📖</div>目前沒有書本，快來新增吧！</div></td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><div class="icon">🌿</div>這裡還沒有書，快來新增吧！</div></td></tr>`;
     return;
   }
 
   tbody.innerHTML = list.map(b => {
-    const st = b.status || 'unread';
-    const stLabel = st === 'read' ? '✓ 借過' : '未借';
-    const stClass = st === 'read' ? 'status-read' : 'status-unread';
-    return `
-    <tr>
+    const st = b.status||'unread';
+    const stLabel = st==='read' ? '✓ 借過' : '未借';
+    const stClass = st==='read' ? 'status-read' : 'status-unread';
+    const tagsHtml = (b.tags||[]).map(t => tagChipHtml(t)).join('');
+    return `<tr>
       <td class="td-title">${esc(b.title)}</td>
       <td class="td-year">${esc(b.year)}</td>
       <td class="td-link">
-        ${b.link ? `<a href="${esc(b.link)}" target="_blank" rel="noopener">博客來 ↗</a>` : ''}
+        ${b.link?`<a href="${esc(b.link)}" target="_blank" rel="noopener">博客來 ↗</a>`:''}
         <a href="https://taiwanlibrarysearch.herokuapp.com/result?book=${encodeURIComponent(b.title)}" target="_blank" rel="noopener" class="lib-link">圖書館 ↗</a>
       </td>
       <td>
-        <select class="diff-select diff-sel-${b.diff||'none'}" onchange="updateDiff(${b.id}, this.value)">
+        <select class="diff-select diff-sel-${b.diff||'none'}" onchange="updateDiff(${b.id},this.value)">
           <option value="" ${!b.diff?'selected':''}>—</option>
           <option value="1" ${b.diff==='1'?'selected':''}>1</option>
           <option value="2" ${b.diff==='2'?'selected':''}>2</option>
@@ -519,125 +627,94 @@ function renderTable() {
         </select>
       </td>
       <td><button class="status-btn ${stClass}" onclick="toggleStatus(${b.id})">${stLabel}</button></td>
-      <td class="td-note"><textarea class="note-edit" rows="2" onchange="updateNote(${b.id}, this.value)">${esc(b.note||'')}</textarea></td>
+      <td><div class="td-tags">${tagsHtml}<span style="cursor:pointer;font-size:0.8rem;color:#a09878;" onclick="editTags(${b.id})" title="編輯標籤">＋</span></div></td>
+      <td><textarea class="note-edit" rows="2" onchange="updateNote(${b.id},this.value)">${esc(b.note||'')}</textarea></td>
       <td><button class="btn-del" onclick="deleteBook(${b.id})" title="刪除">✕</button></td>
     </tr>`;
   }).join('');
 
   ['title','year','diff','status'].forEach(k => {
     const el = document.getElementById('sort-'+k);
-    if (el) el.textContent = sortKey === k ? (sortDir === 1 ? '▲' : '▼') : '';
+    if (el) el.textContent = sortKey===k?(sortDir===1?'▲':'▼'):'';
   });
 }
 
+function editTags(id) {
+  const b = books.find(b => b.id === id);
+  if (!b) return;
+  const input = prompt('編輯標籤（用逗號分隔多個標籤）：', (b.tags||[]).join(', '));
+  if (input === null) return;
+  b.tags = input.split(',').map(t => t.trim()).filter(Boolean);
+  saveToSB(id); renderTable(); renderTagFilter(); updateTagDatalist();
+}
+
 async function updateNote(id, val) {
-  const b = books.find(b => b.id === id);
-  if (!b) return;
-  b.note = val;
-  await saveToSB(id);
+  const b = books.find(b => b.id === id); if (!b) return;
+  b.note = val; await saveToSB(id);
 }
-
 async function updateDiff(id, val) {
-  const b = books.find(b => b.id === id);
-  if (!b) return;
-  b.diff = val;
-  await saveToSB(id);
-  renderTable();
+  const b = books.find(b => b.id === id); if (!b) return;
+  b.diff = val; await saveToSB(id); renderTable();
 }
-
 async function toggleStatus(id) {
-  const b = books.find(b => b.id === id);
-  if (!b) return;
-  b.status = (b.status || 'unread') === 'unread' ? 'read' : 'unread';
-  await saveToSB(id);
-  renderTable();
+  const b = books.find(b => b.id === id); if (!b) return;
+  b.status = (b.status||'unread')==='unread'?'read':'unread';
+  await saveToSB(id); renderTable();
 }
 
-function diffOrder(v) {
-  return { '1':1,'2':2,'3':3,'4':4,'5':5,'X':6,'':7 }[v] ?? 7;
-}
+function diffOrder(v) { return {'1':1,'2':2,'3':3,'4':4,'5':5,'X':6,'':7}[v]??7; }
+function sortBy(key) { if(sortKey===key)sortDir*=-1;else{sortKey=key;sortDir=1;} renderTable(); }
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
-function sortBy(key) {
-  if (sortKey === key) sortDir *= -1;
-  else { sortKey = key; sortDir = 1; }
-  renderTable();
-}
+// ── Google Books 自動補全 ─────────────────────────────────
+let searchTimer=null, lastQuery='';
+const titleInput=document.getElementById('inp-title');
+const sugDiv=document.getElementById('suggestions');
 
-function esc(s) {
-  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-// ── Google Books 自動補全 ────────────────────────────────
-let searchTimer = null;
-let lastQuery = '';
-
-const titleInput = document.getElementById('inp-title');
-const sugDiv = document.getElementById('suggestions');
-
-titleInput.addEventListener('input', () => {
+titleInput.addEventListener('input',()=>{
   clearTimeout(searchTimer);
-  const q = titleInput.value.trim();
-  if (q.length < 2) { hideSuggestions(); return; }
-  if (q === lastQuery) return;
-  sugDiv.style.display = 'block';
-  sugDiv.innerHTML = '<div class="sug-searching">搜尋中…</div>';
-  searchTimer = setTimeout(() => fetchSuggestions(q), 400);
+  const q=titleInput.value.trim();
+  if(q.length<2){hideSuggestions();return;}
+  if(q===lastQuery)return;
+  sugDiv.style.display='block';
+  sugDiv.innerHTML='<div class="sug-searching">🍵 搜尋中…</div>';
+  searchTimer=setTimeout(()=>fetchSuggestions(q),400);
 });
+titleInput.addEventListener('keydown',e=>{if(e.key==='Escape')hideSuggestions();});
+document.addEventListener('click',e=>{if(!document.getElementById('title-field').contains(e.target))hideSuggestions();});
+function hideSuggestions(){sugDiv.style.display='none';sugDiv.innerHTML='';}
 
-titleInput.addEventListener('keydown', e => {
-  if (e.key === 'Escape') hideSuggestions();
-});
-
-document.addEventListener('click', e => {
-  if (!document.getElementById('title-field').contains(e.target)) hideSuggestions();
-});
-
-function hideSuggestions() {
-  sugDiv.style.display = 'none';
-  sugDiv.innerHTML = '';
-}
-
-async function fetchSuggestions(q) {
-  lastQuery = q;
-  try {
-    const url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(q)}&langRestrict=zh&maxResults=8&orderBy=relevance&key=AIzaSyAxymku6xTv3gvRWGNuSbldp8hjtMd4Z5c`;
-    const res = await fetch(url);
-    const data = await res.json();
-    if (lastQuery !== q) return;
-    const items = data.items || [];
-    if (!items.length) {
-      sugDiv.innerHTML = '<div class="sug-searching">找不到結果，請手動輸入</div>';
-      return;
-    }
-    sugDiv.innerHTML = items.map((item, i) => {
-      const info = item.volumeInfo || {};
-      const title = info.title || '';
-      const year = (info.publishedDate || '').slice(0, 4);
-      const authors = (info.authors || []).join('、');
+async function fetchSuggestions(q){
+  lastQuery=q;
+  try{
+    const url=`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(q)}&langRestrict=zh&maxResults=8&orderBy=relevance&key=AIzaSyAxymku6xTv3gvRWGNuSbldp8hjtMd4Z5c`;
+    const res=await fetch(url); const data=await res.json();
+    if(lastQuery!==q)return;
+    const items=data.items||[];
+    if(!items.length){sugDiv.innerHTML='<div class="sug-searching">找不到結果，請手動輸入</div>';return;}
+    sugDiv.innerHTML=items.map((item,i)=>{
+      const info=item.volumeInfo||{};
+      const year=(info.publishedDate||'').slice(0,4);
+      const authors=(info.authors||[]).join('、');
       return `<div class="suggestion-item" onclick="selectBook(${i})">
-        <div class="sug-title">${esc(title)}</div>
-        <div class="sug-meta">${year ? year + '年' : ''}${authors ? ' · ' + esc(authors) : ''}</div>
+        <div class="sug-title">${esc(info.title||'')}</div>
+        <div class="sug-meta">${year?year+'年':''}${authors?' · '+esc(authors):''}</div>
       </div>`;
     }).join('');
-    sugDiv._items = items;
-  } catch {
-    sugDiv.innerHTML = '<div class="sug-searching">搜尋失敗，請手動輸入</div>';
-  }
+    sugDiv._items=items;
+  }catch{sugDiv.innerHTML='<div class="sug-searching">搜尋失敗，請手動輸入</div>';}
 }
 
-function selectBook(i) {
-  const items = sugDiv._items || [];
-  const info = (items[i] || {}).volumeInfo || {};
-  const title = info.title || '';
-  const year = (info.publishedDate || '').slice(0, 4);
-  document.getElementById('inp-title').value = title;
-  document.getElementById('inp-year').value = year;
-  document.getElementById('inp-link').value = booksLink(title);
+function selectBook(i){
+  const items=sugDiv._items||[];
+  const info=(items[i]||{}).volumeInfo||{};
+  document.getElementById('inp-title').value=info.title||'';
+  document.getElementById('inp-year').value=(info.publishedDate||'').slice(0,4);
+  document.getElementById('inp-link').value=booksLink(info.title||'');
   hideSuggestions();
   document.getElementById('inp-diff').focus();
 }
 
-// ── 初始化 ──────────────────────────────────────────────
 loadBooks();
 </script>
 </body>
