@@ -256,6 +256,12 @@ td { padding: 11px 14px; font-size: 0.87rem; vertical-align: middle; }
 .td-link a:hover { background: #edf5e8; border-color: #8aab7a; }
 .lib-link { color: #5878a0 !important; border-color: #a8bcd8 !important; }
 .lib-link:hover { background: #eef3fa !important; }
+.no-link-badge {
+  font-size: 0.78rem; border: 1.5px dashed #d0c8b8;
+  border-radius: 9px; padding: 3px 10px;
+  color: #b8a898; background: #f8f4ee;
+  text-align: center; white-space: nowrap;
+}
 
 /* 難易度 */
 .diff-select {
@@ -612,7 +618,7 @@ function renderTable() {
       <td class="td-title">${esc(b.title)}</td>
       <td class="td-year">${esc(b.year)}</td>
       <td class="td-link">
-        ${b.link?`<a href="${esc(b.link)}" target="_blank" rel="noopener">博客來 ↗</a>`:''}
+        ${b.link?`<a href="${esc(b.link)}" target="_blank" rel="noopener">博客來 ↗</a>`:'<span class="no-link-badge">博客來 ✗</span>'}
         <a href="https://taiwanlibrarysearch.herokuapp.com/result?book=${encodeURIComponent(b.title)}" target="_blank" rel="noopener" class="lib-link">圖書館 ↗</a>
       </td>
       <td>
