@@ -1,16 +1,33 @@
 name: Keep Supabase Alive
+
 on:
   schedule:
-    - cron: '0 0 */5 * *'
+    # 每 3 天執行；UTC 03:17 = 台灣時間 11:17
+    - cron: '17 3 */3 * *'
   workflow_dispatch:
 
 jobs:
   ping:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Ping Supabase
+      - name: Ping Supabase and verify response
+        shell: bash
         run: |
-          curl -s "https://iijsideoqesqizwxpqjo.supabase.co/rest/v1/books?limit=1" \
+          set -euo pipefail
+
+          HTTP_CODE=$(curl \
+            --fail-with-body \
+            --silent \
+            --show-error \
+            --retry 3 \
+            --retry-delay 5 \
+            --output /tmp/supabase-response.json \
+            --write-out "%{http_code}" \
+            "https://iijsideoqesqizwxpqjo.supabase.co/rest/v1/books?select=id&limit=1" \
             -H "apikey: sb_publishable_wT0oFFiIPQ6zy-MMQeJ0Rw_-de1yO06" \
-            -H "Authorization: Bearer sb_publishable_wT0oFFiIPQ6zy-MMQeJ0Rw_-de1yO06"
-          echo "Pinged!"
+            -H "Authorization: Bearer sb_publishable_wT0oFFiIPQ6zy-MMQeJ0Rw_-de1yO06")
+
+          echo "Supabase HTTP status: ${HTTP_CODE}"
+          cat /tmp/supabase-response.json
+          test "${HTTP_CODE}" = "200"
