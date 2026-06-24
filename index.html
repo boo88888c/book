@@ -41,6 +41,29 @@ header h1 {
   letter-spacing: 0.02em;
 }
 .header-icon { font-size: 2rem; }
+.auth-area {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.auth-status {
+  color: rgba(240,235,224,0.8);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+.btn-auth {
+  border: 1px solid rgba(255,255,255,0.45);
+  background: rgba(255,255,255,0.14);
+  color: #fff;
+  border-radius: 11px;
+  padding: 8px 14px;
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.btn-auth:hover { background: rgba(255,255,255,0.24); }
 
 /* 插畫裝飾 SVG */
 .header-deco {
@@ -103,7 +126,7 @@ label {
   text-transform: none;
 }
 
-input[type="text"], input[type="number"], input[type="url"], select, textarea {
+input[type="text"], input[type="number"], input[type="url"], input[type="email"], input[type="password"], input[type="tel"], select, textarea {
   border: 2px solid #ddd5c0;
   border-radius: 11px;
   padding: 9px 13px;
@@ -375,6 +398,35 @@ td { padding: 11px 14px; font-size: 0.87rem; vertical-align: middle; }
 }
 .btn-modal-del:hover { background: #f8d4d4; }
 
+/* 管理員登入 */
+.login-modal { max-width: 420px; }
+.login-help {
+  color: #8b806d;
+  font-size: 0.78rem;
+  line-height: 1.55;
+  margin-top: 2px;
+}
+.login-error {
+  display: none;
+  color: #b83d3d;
+  background: #fceaea;
+  border-radius: 10px;
+  padding: 9px 12px;
+  font-size: 0.8rem;
+  margin-top: 12px;
+}
+.login-error.show { display: block; }
+.guest-note {
+  color: #7d735f;
+  background: #eee8d8;
+  border-radius: 12px;
+  padding: 9px 13px;
+  font-size: 0.8rem;
+  margin-bottom: 18px;
+}
+.read-only-value { color: #625a4d; font-size: 0.84rem; }
+.read-only-note { white-space: pre-wrap; line-height: 1.5; color: #625a4d; min-width: 140px; }
+
 /* 表格內標籤 */
 .td-tags { display: flex; flex-wrap: wrap; gap: 4px; max-width: 180px; }
 
@@ -386,6 +438,8 @@ td { padding: 11px 14px; font-size: 0.87rem; vertical-align: middle; }
 @media (max-width: 700px) {
   .form-grid { grid-template-columns: 1fr 80px; }
   .form-grid-2 { grid-template-columns: 1fr; }
+  .header-inner { padding: 16px 18px; flex-wrap: wrap; }
+  .auth-area { width: 100%; margin-left: 0; justify-content: flex-end; }
 }
 </style>
 </head>
@@ -412,13 +466,17 @@ td { padding: 11px 14px; font-size: 0.87rem; vertical-align: middle; }
   <div class="header-inner">
     <span class="header-icon">📚</span>
     <h1>我的書本收藏</h1>
+    <div class="auth-area">
+      <span class="auth-status" id="auth-status">瀏覽模式</span>
+      <button class="btn-auth" id="auth-button" onclick="openLoginModal()">管理登入</button>
+    </div>
   </div>
 </header>
 
 <div class="main">
 
   <!-- 新增表單 -->
-  <div class="card">
+  <div class="card" id="add-book-card" style="display:none">
     <div class="card-title">
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1L9.5 5.5H14.5L10.5 8.5L12 13L8 10L4 13L5.5 8.5L1.5 5.5H6.5L8 1Z" fill="#8aab7a"/></svg>
       新增一本書
@@ -472,6 +530,8 @@ td { padding: 11px 14px; font-size: 0.87rem; vertical-align: middle; }
       新增收藏
     </button>
   </div>
+
+  <div class="guest-note" id="guest-note">目前為公開瀏覽模式。只有管理員登入後才能新增、編輯或刪除書籍。</div>
 
   <!-- 篩選 -->
   <div class="card" style="padding:18px 24px;">
@@ -543,6 +603,27 @@ td { padding: 11px 14px; font-size: 0.87rem; vertical-align: middle; }
     </div>
   </div>
 
+  <!-- 管理員登入 -->
+  <div class="modal-overlay" id="login-overlay" onclick="closeLoginModal(event)">
+    <div class="modal login-modal">
+      <div class="modal-title">🔐 管理員登入</div>
+      <div class="field" id="login-email-field" style="margin-bottom:14px;">
+        <label>Email（只需首次輸入）</label>
+        <input type="email" id="login-email" autocomplete="username" placeholder="Supabase 管理員 Email">
+      </div>
+      <div class="field">
+        <label>手機號碼</label>
+        <input type="password" id="login-phone" inputmode="tel" autocomplete="current-password" placeholder="請輸入管理員手機號碼">
+        <div class="login-help">提示：請輸入建立管理員帳號時設定的手機號碼。此網站不會顯示號碼內容。</div>
+      </div>
+      <div class="login-error" id="login-error"></div>
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="closeLoginModal()">取消</button>
+        <button class="btn-save" id="login-submit" onclick="adminLogin()">登入</button>
+      </div>
+    </div>
+  </div>
+
   <!-- 表格 -->
   <div class="table-wrap">
     <table>
@@ -568,8 +649,9 @@ td { padding: 11px 14px; font-size: 0.87rem; vertical-align: middle; }
 // ── Supabase ─────────────────────────────────────────────
 const SB_URL = 'https://iijsideoqesqizwxpqjo.supabase.co';
 const SB_KEY = 'sb_publishable_wT0oFFiIPQ6zy-MMQeJ0Rw_-de1yO06';
+const ADMIN_UID = 'd908e6bf-e274-48ab-ae29-92ee5bc19cb3';
 const API = `${SB_URL}/rest/v1/books`;
-const HEADERS = {
+const READ_HEADERS = {
   'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}`,
   'Content-Type': 'application/json', 'Prefer': 'return=representation'
 };
@@ -578,6 +660,144 @@ let books = [];
 let sortKey = 'title', sortDir = 1;
 let filterTag = '';
 let newBookTags = [];
+let authSession = null;
+let isAdmin = false;
+
+function jwtPayload(token) {
+  try {
+    const part = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+    return JSON.parse(decodeURIComponent(atob(part).split('').map(c =>
+      '%' + c.charCodeAt(0).toString(16).padStart(2, '0')).join('')));
+  } catch { return {}; }
+}
+
+function requireAdmin() {
+  if (isAdmin) return true;
+  openLoginModal();
+  return false;
+}
+
+function setAdminMode(enabled) {
+  isAdmin = enabled;
+  document.getElementById('add-book-card').style.display = enabled ? '' : 'none';
+  document.getElementById('guest-note').style.display = enabled ? 'none' : '';
+  document.getElementById('auth-status').textContent = enabled ? '管理員模式' : '瀏覽模式';
+  const button = document.getElementById('auth-button');
+  button.textContent = enabled ? '登出' : '管理登入';
+  button.onclick = enabled ? adminLogout : openLoginModal;
+  renderTable();
+}
+
+function openLoginModal() {
+  const savedEmail = localStorage.getItem('bookAdminEmail') || '';
+  document.getElementById('login-email').value = savedEmail;
+  document.getElementById('login-email-field').style.display = savedEmail ? 'none' : '';
+  document.getElementById('login-phone').value = '';
+  document.getElementById('login-error').classList.remove('show');
+  document.getElementById('login-overlay').classList.add('open');
+  setTimeout(() => document.getElementById(savedEmail ? 'login-phone' : 'login-email').focus(), 0);
+}
+
+function closeLoginModal(e) {
+  if (e && e.target !== document.getElementById('login-overlay')) return;
+  document.getElementById('login-overlay').classList.remove('open');
+}
+
+function showLoginError(message) {
+  const error = document.getElementById('login-error');
+  error.textContent = message;
+  error.classList.add('show');
+}
+
+async function adminLogin() {
+  const email = (localStorage.getItem('bookAdminEmail') || document.getElementById('login-email').value).trim();
+  const phone = document.getElementById('login-phone').value.trim();
+  if (!email || !phone) { showLoginError('請完整輸入 Email 與手機號碼。'); return; }
+
+  const button = document.getElementById('login-submit');
+  button.disabled = true;
+  button.textContent = '登入中…';
+  try {
+    const res = await fetch(`${SB_URL}/auth/v1/token?grant_type=password`, {
+      method: 'POST',
+      headers: { 'apikey': SB_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password: phone })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error('帳號或手機號碼不正確。');
+    if (jwtPayload(data.access_token).sub !== ADMIN_UID) throw new Error('此帳號不是指定的管理員。');
+
+    authSession = data;
+    localStorage.setItem('bookAdminEmail', email);
+    sessionStorage.setItem('bookAdminSession', JSON.stringify(data));
+    closeLoginModal();
+    setAdminMode(true);
+  } catch (error) {
+    showLoginError(error.message || '登入失敗，請稍後再試。');
+  } finally {
+    button.disabled = false;
+    button.textContent = '登入';
+  }
+}
+
+async function refreshAuthSession() {
+  if (!authSession?.refresh_token) return false;
+  try {
+    const res = await fetch(`${SB_URL}/auth/v1/token?grant_type=refresh_token`, {
+      method: 'POST',
+      headers: { 'apikey': SB_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refresh_token: authSession.refresh_token })
+    });
+    const data = await res.json();
+    if (!res.ok || jwtPayload(data.access_token).sub !== ADMIN_UID) return false;
+    authSession = data;
+    sessionStorage.setItem('bookAdminSession', JSON.stringify(data));
+    return true;
+  } catch { return false; }
+}
+
+async function getWriteHeaders() {
+  if (!authSession?.access_token) throw new Error('請先以管理員身分登入。');
+  const payload = jwtPayload(authSession.access_token);
+  if (!payload.exp || payload.exp * 1000 < Date.now() + 30000) {
+    if (!await refreshAuthSession()) {
+      await adminLogout();
+      throw new Error('登入已過期，請重新登入。');
+    }
+  }
+  return {
+    'apikey': SB_KEY,
+    'Authorization': `Bearer ${authSession.access_token}`,
+    'Content-Type': 'application/json',
+    'Prefer': 'return=representation'
+  };
+}
+
+async function adminLogout() {
+  const token = authSession?.access_token;
+  authSession = null;
+  sessionStorage.removeItem('bookAdminSession');
+  setAdminMode(false);
+  if (token) {
+    fetch(`${SB_URL}/auth/v1/logout`, {
+      method: 'POST', headers: { 'apikey': SB_KEY, 'Authorization': `Bearer ${token}` }
+    }).catch(() => {});
+  }
+}
+
+async function restoreAdminSession() {
+  try {
+    authSession = JSON.parse(sessionStorage.getItem('bookAdminSession') || 'null');
+    if (!authSession || jwtPayload(authSession.access_token).sub !== ADMIN_UID) return setAdminMode(false);
+    const payload = jwtPayload(authSession.access_token);
+    if (payload.exp * 1000 < Date.now() + 30000 && !await refreshAuthSession()) {
+      authSession = null;
+      sessionStorage.removeItem('bookAdminSession');
+      return setAdminMode(false);
+    }
+    setAdminMode(true);
+  } catch { setAdminMode(false); }
+}
 
 // ── 標籤顏色 ─────────────────────────────────────────────
 function tagColor(name) {
@@ -619,7 +839,8 @@ function updateTagDatalist() {
 async function loadBooks() {
   setLoading(true);
   try {
-    const res = await fetch(API + '?order=created_at.desc', { headers: HEADERS });
+    const res = await fetch(API + '?order=created_at.desc', { headers: READ_HEADERS });
+    if (!res.ok) throw new Error(`讀取書籍失敗 (${res.status})`);
     const rows = await res.json();
     books = rows.map(row => ({ id: row.id, ...JSON.parse(row.data || '{}') }));
   } catch(e) { console.error(e); }
@@ -628,16 +849,20 @@ async function loadBooks() {
 }
 
 async function saveToSB(id) {
+  if (!requireAdmin()) return false;
   const b = books.find(b => b.id === id);
-  if (!b) return;
+  if (!b) return false;
   const { id: _, ...data } = b;
-  await fetch(`${API}?id=eq.${id}`, {
-    method: 'PATCH', headers: HEADERS,
+  const res = await fetch(`${API}?id=eq.${id}`, {
+    method: 'PATCH', headers: await getWriteHeaders(),
     body: JSON.stringify({ data: JSON.stringify(data) })
   });
+  if (!res.ok) throw new Error(`儲存失敗 (${res.status})`);
+  return true;
 }
 
 async function addBook() {
+  if (!requireAdmin()) return;
   const title = document.getElementById('inp-title').value.trim();
   if (!title) { alert('請輸入書名 📖'); return; }
   const bookData = {
@@ -651,7 +876,8 @@ async function addBook() {
   const btn = document.querySelector('.btn-add');
   btn.disabled = true; btn.childNodes[btn.childNodes.length-1].textContent = ' 儲存中…';
   try {
-    const res = await fetch(API, { method: 'POST', headers: HEADERS, body: JSON.stringify({ data: JSON.stringify(bookData) }) });
+    const res = await fetch(API, { method: 'POST', headers: await getWriteHeaders(), body: JSON.stringify({ data: JSON.stringify(bookData) }) });
+    if (!res.ok) throw new Error(`新增失敗 (${res.status})`);
     const [row] = await res.json();
     books.unshift({ id: row.id, ...bookData });
     renderTable(); renderTagFilter(); updateTagDatalist(); clearForm();
@@ -667,8 +893,10 @@ function clearForm() {
 }
 
 async function deleteBook(id) {
+  if (!requireAdmin()) return;
   if (!confirm('確定要刪除這本書嗎？')) return;
-  await fetch(`${API}?id=eq.${id}`, { method: 'DELETE', headers: HEADERS });
+  const res = await fetch(`${API}?id=eq.${id}`, { method: 'DELETE', headers: await getWriteHeaders() });
+  if (!res.ok) { alert(`刪除失敗 (${res.status})`); return; }
   books = books.filter(b => b.id !== id);
   renderTable(); renderTagFilter(); updateTagDatalist();
 }
@@ -729,6 +957,27 @@ function renderTable() {
     const stLabel = st==='read' ? '✓ 借過' : '未借';
     const stClass = st==='read' ? 'status-read' : 'status-unread';
     const tagsHtml = (b.tags||[]).map(t => tagChipHtml(t)).join('');
+    const diffHtml = isAdmin ? `
+      <select class="diff-select diff-sel-${b.diff||'none'}" onchange="updateDiff(${b.id},this.value)">
+        <option value="" ${!b.diff?'selected':''}>—</option>
+        <option value="1" ${b.diff==='1'?'selected':''}>1</option>
+        <option value="2" ${b.diff==='2'?'selected':''}>2</option>
+        <option value="3" ${b.diff==='3'?'selected':''}>3</option>
+        <option value="4" ${b.diff==='4'?'selected':''}>4</option>
+        <option value="5" ${b.diff==='5'?'selected':''}>5</option>
+        <option value="X" ${b.diff==='X'?'selected':''}>X</option>
+      </select>` : `<span class="read-only-value">${esc(b.diff)||'—'}</span>`;
+    const statusHtml = isAdmin
+      ? `<button class="status-btn ${stClass}" onclick="toggleStatus(${b.id})">${stLabel}</button>`
+      : `<span class="status-btn ${stClass}">${stLabel}</span>`;
+    const tagEditHtml = isAdmin
+      ? `<span style="cursor:pointer;font-size:0.8rem;color:#a09878;" onclick="editTags(${b.id})" title="編輯標籤">＋</span>` : '';
+    const noteHtml = isAdmin
+      ? `<textarea class="note-edit" rows="2" onchange="updateNote(${b.id},this.value)">${esc(b.note||'')}</textarea>`
+      : `<div class="read-only-note">${esc(b.note||'')}</div>`;
+    const actionsHtml = isAdmin ? `
+      <button class="btn-edit" onclick="openModal(${b.id})" title="編輯">✏️</button>
+      <button class="btn-del" onclick="deleteBook(${b.id})" title="刪除">✕</button>` : '';
     return `<tr>
       <td class="td-title">${esc(b.title)}</td>
       <td class="td-year">${esc(b.year)||'—'}</td>
@@ -736,24 +985,11 @@ function renderTable() {
         ${b.link?`<a href="${esc(b.link)}" target="_blank" rel="noopener">博客來 ↗</a>`:'<span class="no-link-badge">博客來 ✗</span>'}
         <a href="https://taiwanlibrarysearch.herokuapp.com/result?book=${encodeURIComponent(b.title)}" target="_blank" rel="noopener" class="lib-link">圖書館 ↗</a>
       </td>
-      <td>
-        <select class="diff-select diff-sel-${b.diff||'none'}" onchange="updateDiff(${b.id},this.value)">
-          <option value="" ${!b.diff?'selected':''}>—</option>
-          <option value="1" ${b.diff==='1'?'selected':''}>1</option>
-          <option value="2" ${b.diff==='2'?'selected':''}>2</option>
-          <option value="3" ${b.diff==='3'?'selected':''}>3</option>
-          <option value="4" ${b.diff==='4'?'selected':''}>4</option>
-          <option value="5" ${b.diff==='5'?'selected':''}>5</option>
-          <option value="X" ${b.diff==='X'?'selected':''}>X</option>
-        </select>
-      </td>
-      <td><button class="status-btn ${stClass}" onclick="toggleStatus(${b.id})">${stLabel}</button></td>
-      <td><div class="td-tags">${tagsHtml}<span style="cursor:pointer;font-size:0.8rem;color:#a09878;" onclick="editTags(${b.id})" title="編輯標籤">＋</span></div></td>
-      <td><textarea class="note-edit" rows="2" onchange="updateNote(${b.id},this.value)">${esc(b.note||'')}</textarea></td>
-      <td style="white-space:nowrap">
-        <button class="btn-edit" onclick="openModal(${b.id})" title="編輯">✏️</button>
-        <button class="btn-del" onclick="deleteBook(${b.id})" title="刪除">✕</button>
-      </td>
+      <td>${diffHtml}</td>
+      <td>${statusHtml}</td>
+      <td><div class="td-tags">${tagsHtml}${tagEditHtml}</div></td>
+      <td>${noteHtml}</td>
+      <td style="white-space:nowrap">${actionsHtml}</td>
     </tr>`;
   }).join('');
 
@@ -767,6 +1003,7 @@ function renderTable() {
 let modalBookId = null;
 
 function openModal(id) {
+  if (!requireAdmin()) return;
   const b = books.find(b => b.id === id);
   if (!b) return;
   modalBookId = id;
@@ -787,6 +1024,7 @@ function closeModal(e) {
 }
 
 async function saveModal() {
+  if (!requireAdmin()) return;
   const b = books.find(b => b.id === modalBookId);
   if (!b) return;
   b.title  = document.getElementById('m-title').value.trim();
@@ -803,8 +1041,10 @@ async function saveModal() {
 }
 
 async function deleteFromModal() {
+  if (!requireAdmin()) return;
   if (!confirm('確定要刪除這本書嗎？')) return;
-  await fetch(`${API}?id=eq.${modalBookId}`, { method: 'DELETE', headers: HEADERS });
+  const res = await fetch(`${API}?id=eq.${modalBookId}`, { method: 'DELETE', headers: await getWriteHeaders() });
+  if (!res.ok) { alert(`刪除失敗 (${res.status})`); return; }
   books = books.filter(b => b.id !== modalBookId);
   document.getElementById('modal-overlay').classList.remove('open');
   modalBookId = null;
@@ -812,6 +1052,7 @@ async function deleteFromModal() {
 }
 
 function editTags(id) {
+  if (!requireAdmin()) return;
   const b = books.find(b => b.id === id);
   if (!b) return;
   const input = prompt('編輯標籤（用逗號分隔多個標籤）：', (b.tags||[]).join(', '));
@@ -821,20 +1062,24 @@ function editTags(id) {
 }
 
 async function updateField(id, field, val) {
+  if (!requireAdmin()) return;
   const b = books.find(b => b.id === id); if (!b) return;
   b[field] = val;
   await saveToSB(id);
 }
 
 async function updateNote(id, val) {
+  if (!requireAdmin()) return;
   const b = books.find(b => b.id === id); if (!b) return;
   b.note = val; await saveToSB(id);
 }
 async function updateDiff(id, val) {
+  if (!requireAdmin()) return;
   const b = books.find(b => b.id === id); if (!b) return;
   b.diff = val; await saveToSB(id); renderTable();
 }
 async function toggleStatus(id) {
+  if (!requireAdmin()) return;
   const b = books.find(b => b.id === id); if (!b) return;
   b.status = (b.status||'unread')==='unread'?'read':'unread';
   await saveToSB(id); renderTable();
@@ -893,7 +1138,16 @@ function selectBook(i){
   document.getElementById('inp-diff').focus();
 }
 
-loadBooks();
+document.getElementById('login-phone').addEventListener('keydown', event => {
+  if (event.key === 'Enter') adminLogin();
+});
+
+async function initApp() {
+  await restoreAdminSession();
+  await loadBooks();
+}
+
+initApp();
 </script>
 </body>
 </html>
