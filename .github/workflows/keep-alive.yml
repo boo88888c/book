@@ -2,8 +2,8 @@ name: Keep Supabase Alive
 
 on:
   schedule:
-    # 每 3 天執行；UTC 03:17 = 台灣時間 11:17
-    - cron: '17 3 */3 * *'
+    # Run daily. UTC 03:17 = Taiwan time 11:17.
+    - cron: '17 3 * * *'
   workflow_dispatch:
 
 jobs:
@@ -11,10 +11,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Ping Supabase and verify response
+      - name: Write Supabase heartbeat and verify response
         shell: bash
         run: |
           set -euo pipefail
+
+          SUPABASE_URL="https://iijsideoqesqizwxpqjo.supabase.co"
+          SUPABASE_KEY="sb_publishable_wT0oFFiIPQ6zy-MMQeJ0Rw_-de1yO06"
+
+          BODY=$(printf '{"id":1,"pinged_at":"%s","source":"github-actions"}' "$(date -u +%Y-%m-%dT%H:%M:%SZ)")
 
           HTTP_CODE=$(curl \
             --fail-with-body \
@@ -22,12 +27,20 @@ jobs:
             --show-error \
             --retry 3 \
             --retry-delay 5 \
-            --output /tmp/supabase-response.json \
+            --output /tmp/supabase-heartbeat-response.txt \
             --write-out "%{http_code}" \
-            "https://iijsideoqesqizwxpqjo.supabase.co/rest/v1/books?select=id&limit=1" \
-            -H "apikey: sb_publishable_wT0oFFiIPQ6zy-MMQeJ0Rw_-de1yO06" \
-            -H "Authorization: Bearer sb_publishable_wT0oFFiIPQ6zy-MMQeJ0Rw_-de1yO06")
+            "${SUPABASE_URL}/rest/v1/keepalive_ping?on_conflict=id" \
+            -X POST \
+            -H "apikey: ${SUPABASE_KEY}" \
+            -H "Authorization: Bearer ${SUPABASE_KEY}" \
+            -H "Content-Type: application/json" \
+            -H "Prefer: resolution=merge-duplicates,return=representation" \
+            --data "${BODY}")
 
-          echo "Supabase HTTP status: ${HTTP_CODE}"
-          cat /tmp/supabase-response.json
-          test "${HTTP_CODE}" = "200"
+          echo "Supabase heartbeat HTTP status: ${HTTP_CODE}"
+          cat /tmp/supabase-heartbeat-response.txt
+
+          case "${HTTP_CODE}" in
+            200|201) exit 0 ;;
+            *) exit 1 ;;
+          esac
